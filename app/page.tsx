@@ -68,7 +68,7 @@ export default function Home() {
                   minRating: minRating,
                 }}
                 page={currentPage}
-                pageSize={10}
+                pageSize={5}
                 onPageChange={setCurrentPage}
               />
             </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useRef, useSyncExternalStore, useCallback } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useSyncExternalStore } from "react";
 
 type Theme = "light" | "dark";
 
@@ -29,10 +29,11 @@ function getServerSnapshot(): Theme {
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const theme = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-  const mountedRef = useRef(false);
+  const previousThemeRef = useRef<Theme | null>(null);
 
   const setTheme = useCallback((newTheme: Theme) => {
     localStorage.setItem("theme", newTheme);
+    document.cookie = `theme=${newTheme};path=/;max-age=31536000;SameSite=Lax`;
     document.documentElement.classList.toggle("dark", newTheme === "dark");
     window.dispatchEvent(new StorageEvent("storage", { key: "theme", newValue: newTheme }));
   }, []);
@@ -42,11 +43,18 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [theme, setTheme]);
 
   useEffect(() => {
-    if (!mountedRef.current) {
-      mountedRef.current = true;
+    // Skip first render - the inline script already set the correct class
+    if (previousThemeRef.current === null) {
+      previousThemeRef.current = theme;
+      setTheme(theme === "light" ? "dark" : "light");
+      return;
+    }
+    // Only update class when theme actually changes
+    if (previousThemeRef.current !== theme) {
+      previousThemeRef.current = theme;
       document.documentElement.classList.toggle("dark", theme === "dark");
     }
-  });
+  }, [theme, setTheme]);
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>

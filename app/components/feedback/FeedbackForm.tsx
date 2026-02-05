@@ -5,6 +5,7 @@ import { gql } from "@apollo/client/core";
 import { useMutation } from "@apollo/client/react";
 import { StarRating } from "./StarRating";
 import { EventSelector } from "../events/EventSelector";
+import { Input, TextArea, Button } from "../ui";
 
 const CREATE_FEEDBACK = gql`
   mutation CreateFeedback($input: CreateFeedbackInput!) {
@@ -107,19 +108,15 @@ export function FeedbackForm({ preselectedEventId }: FeedbackFormProps) {
         />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Your Name
-        </label>
-        <input
-          type="text"
-          value={authorName}
-          onChange={(e) => setAuthorName(e.target.value)}
-          placeholder="Enter your name"
-          className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:placeholder-gray-400"
-          maxLength={100}
-        />
-      </div>
+      <Input
+        id="authorName"
+        label="Your Name"
+        type="text"
+        value={authorName}
+        onChange={(e) => setAuthorName(e.target.value)}
+        placeholder="Enter your name"
+        maxLength={100}
+      />
 
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -129,15 +126,13 @@ export function FeedbackForm({ preselectedEventId }: FeedbackFormProps) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Your Feedback
-        </label>
-        <textarea
+        <TextArea
+          id="content"
+          label="Your Feedback"
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="Share your experience..."
           rows={4}
-          className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none dark:placeholder-gray-400"
           maxLength={1000}
         />
         <div className="text-xs text-gray-500 dark:text-gray-400 text-right mt-1">
@@ -157,13 +152,15 @@ export function FeedbackForm({ preselectedEventId }: FeedbackFormProps) {
         </div>
       )}
 
-      <button
+      <Button
         type="submit"
         disabled={!isValid || loading}
-        className="w-full py-2.5 px-4 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
+        variant="primary"
+        size="lg"
+        fullWidth
       >
         {loading ? "Submitting..." : "Submit Feedback"}
-      </button>
+      </Button>
     </form>
   );
 }

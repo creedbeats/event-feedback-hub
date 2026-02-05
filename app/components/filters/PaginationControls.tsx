@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "../ui";
+
 interface PaginationControlsProps {
   currentPage: number;
   totalPages: number;
@@ -31,13 +33,14 @@ export function PaginationControls({
 
   return (
     <div className="flex items-center justify-center gap-1 mt-6">
-      <button
+      <Button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={!hasPreviousPage}
-        className="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+        variant="secondary"
+        size="sm"
       >
         Previous
-      </button>
+      </Button>
 
       <div className="flex items-center gap-1 mx-2">
         {startPage > 1 && (
@@ -83,13 +86,14 @@ export function PaginationControls({
         )}
       </div>
 
-      <button
+      <Button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={!hasNextPage}
-        className="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+        variant="secondary"
+        size="sm"
       >
         Next
-      </button>
+      </Button>
     </div>
   );
 }

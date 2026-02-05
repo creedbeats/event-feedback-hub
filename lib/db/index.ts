@@ -1,37 +1,37 @@
-import Database from "better-sqlite3";
-import { drizzle } from "drizzle-orm/better-sqlite3";
+import { config } from "dotenv";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 import * as schema from "./schema";
-import path from "path";
 
-const dbPath = path.join(process.cwd(), "data", "feedback.db");
+// Load .env.local for CLI scripts (Next.js loads this automatically)
+config({ path: ".env.local" });
 
-const sqlite = new Database(dbPath);
-sqlite.pragma("journal_mode = WAL");
+const connectionString = process.env.DATABASE_URL;
 
-export const db = drizzle(sqlite, { schema });
+if (!connectionString) {
+  throw new Error("DATABASE_URL environment variable is not set");
+}
 
-export function initializeDatabase() {
-  sqlite.exec(`
-    CREATE TABLE IF NOT EXISTS events (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      description TEXT,
-      date TEXT NOT NULL,
-      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-    );
+const queryClient = postgres(connectionString, {
+  max: 10,
+  idle_timeout: 20,
+  connect_timeout: 10,
+});
 
-    CREATE TABLE IF NOT EXISTS feedback (
-      id TEXT PRIMARY KEY,
-      event_id TEXT NOT NULL REFERENCES events(id),
-      author_name TEXT NOT NULL,
-      content TEXT NOT NULL,
-      rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
-      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-    );
+export const db = drizzle(queryClient, { schema });
 
-    CREATE INDEX IF NOT EXISTS idx_feedback_event_id ON feedback(event_id);
-    CREATE INDEX IF NOT EXISTS idx_feedback_rating ON feedback(rating);
-  `);
+export async function initializeDatabase() {
+  try {
+    await queryClient`SELECT 1`;
+    console.log("Database connection verified");
+  } catch (error) {
+    console.error("Failed to connect to database:", error);
+    throw error;
+  }
+}
+
+export async function closeDatabase() {
+  await queryClient.end();
 }
 
 export { schema };

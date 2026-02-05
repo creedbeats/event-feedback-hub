@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { gql } from "@apollo/client/core";
 import { useQuery, useSubscription } from "@apollo/client/react";
-import { FeedbackItem } from "./FeedbackItem";
+import { useState } from "react";
 import { PaginationControls } from "../filters/PaginationControls";
+import { FeedbackItem } from "./FeedbackItem";
 
 const GET_FEEDBACK = gql`
   query GetFeedback($filter: FeedbackFilterInput, $pagination: PaginationInput) {
@@ -68,7 +68,7 @@ interface FeedbackData {
   authorName: string;
   content: string;
   rating: number;
-  createdAt: string;
+  createdAt: number;
   event: {
     id: string;
     name: string;

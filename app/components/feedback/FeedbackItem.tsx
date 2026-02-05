@@ -18,7 +18,7 @@ interface FeedbackItemProps {
 }
 
 export function FeedbackItem({ feedback, isNew = false }: FeedbackItemProps) {
-  const formattedDate = new Date(feedback.createdAt).toLocaleDateString(
+  const formattedDate = new Date(Number(feedback.createdAt)).toLocaleDateString(
     "en-US",
     {
       year: "numeric",
@@ -31,11 +31,10 @@ export function FeedbackItem({ feedback, isNew = false }: FeedbackItemProps) {
 
   return (
     <div
-      className={`bg-white dark:bg-gray-700 rounded-lg border p-4 transition-all ${
-        isNew
-          ? "border-blue-400 shadow-md ring-2 ring-blue-100 dark:ring-blue-900"
-          : "border-gray-200 dark:border-gray-600 shadow-sm"
-      }`}
+      className={`bg-white dark:bg-gray-700 rounded-lg border p-4 transition-all ${isNew
+        ? "border-blue-400 shadow-md ring-2 ring-blue-100 dark:ring-blue-900"
+        : "border-gray-200 dark:border-gray-600 shadow-sm"
+        }`}
     >
       <div className="flex items-start justify-between gap-4 mb-3">
         <div className="flex-1 min-w-0">

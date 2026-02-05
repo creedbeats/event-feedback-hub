@@ -14,19 +14,19 @@ interface PaginationInput {
 
 export const queryResolvers = {
   Query: {
-    events: () => {
-      return db.select().from(schema.events).all();
+    events: async () => {
+      return await db.select().from(schema.events);
     },
 
-    event: (_: unknown, { id }: { id: string }) => {
-      return db
+    event: async (_: unknown, { id }: { id: string }) => {
+      const results = await db
         .select()
         .from(schema.events)
-        .where(eq(schema.events.id, id))
-        .get();
+        .where(eq(schema.events.id, id));
+      return results[0] ?? null;
     },
 
-    feedback: (
+    feedback: async (
       _: unknown,
       {
         filter,
@@ -52,22 +52,20 @@ export const queryResolvers = {
       const whereClause =
         conditions.length > 0 ? and(...conditions) : undefined;
 
-      const items = db
+      const items = await db
         .select()
         .from(schema.feedback)
         .where(whereClause)
         .orderBy(desc(schema.feedback.createdAt))
         .limit(pageSize)
-        .offset(offset)
-        .all();
+        .offset(offset);
 
-      const totalResult = db
+      const totalResult = await db
         .select({ count: count() })
         .from(schema.feedback)
-        .where(whereClause)
-        .get();
+        .where(whereClause);
 
-      const totalCount = totalResult?.count ?? 0;
+      const totalCount = totalResult[0]?.count ?? 0;
       const totalPages = Math.ceil(totalCount / pageSize);
 
       return {
@@ -84,41 +82,38 @@ export const queryResolvers = {
   },
 
   Event: {
-    feedback: (event: { id: string }) => {
-      return db
+    feedback: async (event: { id: string }) => {
+      return await db
         .select()
         .from(schema.feedback)
         .where(eq(schema.feedback.eventId, event.id))
-        .orderBy(desc(schema.feedback.createdAt))
-        .all();
+        .orderBy(desc(schema.feedback.createdAt));
     },
 
-    feedbackCount: (event: { id: string }) => {
-      const result = db
+    feedbackCount: async (event: { id: string }) => {
+      const result = await db
         .select({ count: count() })
         .from(schema.feedback)
-        .where(eq(schema.feedback.eventId, event.id))
-        .get();
-      return result?.count ?? 0;
+        .where(eq(schema.feedback.eventId, event.id));
+      return result[0]?.count ?? 0;
     },
 
-    averageRating: (event: { id: string }) => {
-      const result = db
+    averageRating: async (event: { id: string }) => {
+      const result = await db
         .select({ avg: avg(schema.feedback.rating) })
         .from(schema.feedback)
-        .where(eq(schema.feedback.eventId, event.id))
-        .get();
-      return result?.avg ? parseFloat(result.avg) : null;
+        .where(eq(schema.feedback.eventId, event.id));
+      return result[0]?.avg ? parseFloat(result[0].avg) : null;
     },
   },
 
   Feedback: {
-    event: (feedback: { eventId: string }) => {
-      return db
+    event: async (feedback: { eventId: string }) => {
+      const results = await db
         .select()
         .from(schema.events)
-        .where(eq(schema.events.id, feedback.eventId))
-        .get();
+        .where(eq(schema.events.id, feedback.eventId));
+      return results[0] ?? null;
     },
   },
 };

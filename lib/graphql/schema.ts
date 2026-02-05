@@ -54,7 +54,10 @@ export const typeDefs = /* GraphQL */ `
   type Query {
     events: [Event!]!
     event(id: ID!): Event
-    feedback(filter: FeedbackFilterInput, pagination: PaginationInput): FeedbackConnection!
+    feedback(
+      filter: FeedbackFilterInput
+      pagination: PaginationInput
+    ): FeedbackConnection!
   }
 
   type Mutation {
@@ -64,4 +67,4 @@ export const typeDefs = /* GraphQL */ `
   type Subscription {
     feedbackAdded(eventId: ID): Feedback!
   }
-`;
+`

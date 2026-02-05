@@ -1,6 +1,5 @@
 import { db, schema } from "@/lib/db";
 import { pubsub } from "@/lib/graphql/pubsub";
-import { v4 as uuidv4 } from "uuid";
 import { eq } from "drizzle-orm";
 
 interface CreateFeedbackInput {
@@ -12,7 +11,7 @@ interface CreateFeedbackInput {
 
 export const mutationResolvers = {
   Mutation: {
-    createFeedback: (
+    createFeedback: async (
       _: unknown,
       { input }: { input: CreateFeedbackInput }
     ) => {
@@ -28,35 +27,24 @@ export const mutationResolvers = {
         throw new Error("Author name is required");
       }
 
-      const event = db
+      const events = await db
         .select()
         .from(schema.events)
-        .where(eq(schema.events.id, input.eventId))
-        .get();
+        .where(eq(schema.events.id, input.eventId));
 
-      if (!event) {
+      if (events.length === 0) {
         throw new Error("Event not found");
       }
 
-      const id = uuidv4();
-      const createdAt = new Date().toISOString();
-
-      db.insert(schema.feedback)
+      const [feedback] = await db
+        .insert(schema.feedback)
         .values({
-          id,
           eventId: input.eventId,
           authorName: input.authorName.trim(),
           content: input.content.trim(),
           rating: input.rating,
-          createdAt,
         })
-        .run();
-
-      const feedback = db
-        .select()
-        .from(schema.feedback)
-        .where(eq(schema.feedback.id, id))
-        .get();
+        .returning();
 
       if (feedback) {
         pubsub.publish("feedbackAdded", feedback);

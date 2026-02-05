@@ -1,27 +1,27 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
-import { relations, sql } from "drizzle-orm";
+import { pgTable, uuid, text, integer, timestamp } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 
-export const events = sqliteTable("events", {
-  id: text("id").primaryKey(),
+export const events = pgTable("events", {
+  id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
   description: text("description"),
   date: text("date").notNull(),
-  createdAt: text("created_at")
+  createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
+    .defaultNow(),
 });
 
-export const feedback = sqliteTable("feedback", {
-  id: text("id").primaryKey(),
-  eventId: text("event_id")
+export const feedback = pgTable("feedback", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  eventId: uuid("event_id")
     .notNull()
     .references(() => events.id),
   authorName: text("author_name").notNull(),
   content: text("content").notNull(),
   rating: integer("rating").notNull(),
-  createdAt: text("created_at")
+  createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
+    .defaultNow(),
 });
 
 export const eventsRelations = relations(events, ({ many }) => ({

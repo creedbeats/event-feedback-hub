@@ -1,36 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Event Feedback Hub
+
+> Real-time feedback application for events, built with Next.js, React, GraphQL, and SQLite.
+
+## Overview
+
+Event Feedback Hub enables event organizers to collect, view, and analyze real-time feedback from attendees. The app features live updates, star ratings, filtering, and a modern UI for both users and admins.
+
+## Features
+
+- Submit feedback for events with star ratings and comments
+- Real-time updates using GraphQL subscriptions (SSE)
+- Filter and paginate feedback
+- Admin and attendee views
+- Modern, responsive UI
+
+## Tech Stack
+
+- **Next.js 16** (App Router)
+- **React 19**
+- **GraphQL Yoga** (API with SSE subscriptions)
+- **Apollo Client** (state management)
+- **SQLite + Drizzle ORM** (database)
+- **Tailwind CSS 4** (styling)
+- **TypeScript** (strict mode)
+
+## Key Directories
+
+- `app/api/graphql/` – GraphQL endpoint (queries, mutations, subscriptions)
+- `app/components/` – React components (feedback, events, filters, UI)
+- `lib/db/` – Database schema and connection (Drizzle ORM + SQLite)
+- `lib/graphql/` – GraphQL schema and resolvers
+- `lib/apollo/` – Apollo Client config (with SSE support)
+- `data/` – SQLite database file (gitignored)
+
+## GraphQL API
+
+- **Endpoint:** `/api/graphql` (includes GraphiQL playground)
+- **Queries:** `events`, `event(id)`, `feedback(filter, pagination)`
 
 ## Getting Started
 
-First, run the development server:
+Install dependencies:
+
+```bash
+npm install
+```
+
+Run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit [http://localhost:3000](http://localhost:3000) to use the app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Seed the database with sample events (optional):
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run db:seed
+```
 
-## Learn More
+## Scripts
 
-To learn more about Next.js, take a look at the following resources:
+- `npm run dev` – Start development server
+- `npm run build` – Build for production
+- `npm run lint` – Run ESLint
+- `npm run db:seed` – Seed sample events to database
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+For architecture details and development guidance, see `CLAUDE.md`.

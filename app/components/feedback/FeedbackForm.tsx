@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import { gql } from "@apollo/client/core";
 import { useMutation } from "@apollo/client/react";
-import { StarRating } from "./StarRating";
+import { useState } from "react";
 import { EventSelector } from "../events/EventSelector";
-import { Input, TextArea, Button } from "../ui";
+import { Button, Input, TextArea } from "../ui";
+import { StarRating } from "./StarRating";
 
 const CREATE_FEEDBACK = gql`
   mutation CreateFeedback($input: CreateFeedbackInput!) {
@@ -19,33 +19,6 @@ const CREATE_FEEDBACK = gql`
     }
   }
 `;
-
-const GET_FEEDBACK = gql`
-  query GetFeedback($filter: FeedbackFilterInput, $pagination: PaginationInput) {
-    feedback(filter: $filter, pagination: $pagination) {
-      items {
-        id
-        eventId
-        authorName
-        content
-        rating
-        createdAt
-        event {
-          id
-          name
-        }
-      }
-      totalCount
-      pageInfo {
-        hasNextPage
-        hasPreviousPage
-        currentPage
-        totalPages
-      }
-    }
-  }
-`;
-
 interface FeedbackFormProps {
   preselectedEventId?: string | null;
 }
@@ -60,14 +33,11 @@ export function FeedbackForm({ preselectedEventId }: FeedbackFormProps) {
   const [successMessage, setSuccessMessage] = useState("");
 
   const [createFeedback, { loading, error }] = useMutation(CREATE_FEEDBACK, {
-    refetchQueries: [{ query: GET_FEEDBACK }],
     onCompleted: () => {
       setAuthorName("");
       setContent("");
       setRating(0);
-      if (!preselectedEventId) {
-        setEventId(null);
-      }
+      setEventId(preselectedEventId || null);
       setSuccessMessage("Feedback submitted successfully!");
       setTimeout(() => setSuccessMessage(""), 3000);
     },

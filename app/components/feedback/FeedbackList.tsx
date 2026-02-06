@@ -68,7 +68,7 @@ interface FeedbackData {
   authorName: string;
   content: string;
   rating: number;
-  createdAt: number;
+  createdAt: string;
   event: {
     id: string;
     name: string;

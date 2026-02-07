@@ -2,6 +2,7 @@
 
 import { gql } from "@apollo/client/core";
 import { useQuery } from "@apollo/client/react";
+import type { EventsResponse } from "@/lib/types";
 
 const GET_EVENTS = gql`
   query GetEvents {
@@ -12,12 +13,6 @@ const GET_EVENTS = gql`
     }
   }
 `;
-
-interface Event {
-  id: string;
-  name: string;
-  date: string;
-}
 
 interface EventSelectorProps {
   selectedEventId: string | null;
@@ -30,7 +25,7 @@ export function EventSelector({
   onEventChange,
   showAllOption = true,
 }: EventSelectorProps) {
-  const { data, loading, error } = useQuery<{ events: Event[] }>(GET_EVENTS);
+  const { data, loading, error } = useQuery<EventsResponse>(GET_EVENTS);
 
   if (error) {
     return <div className="text-red-500 text-sm">Failed to load events</div>;

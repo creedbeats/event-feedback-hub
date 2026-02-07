@@ -1,11 +1,13 @@
-import {
-  ApolloLink,
-  Operation,
-  FetchResult,
-  Observable,
-} from "@apollo/client/core";
+import { ApolloLink, Observable } from "@apollo/client";
+import type { ExecutionResult } from "graphql";
 import { print } from "graphql";
-import { createClient, ClientOptions } from "graphql-sse";
+import { createClient, type ClientOptions } from "graphql-sse";
+
+type ApolloOperation = {
+  query: import("graphql").DocumentNode;
+  variables: Record<string, unknown>;
+  operationName: string | undefined;
+};
 
 export class SSELink extends ApolloLink {
   private client: ReturnType<typeof createClient>;
@@ -15,7 +17,7 @@ export class SSELink extends ApolloLink {
     this.client = createClient(options);
   }
 
-  public request(operation: Operation): Observable<FetchResult> {
+  public request(operation: ApolloOperation): Observable<ExecutionResult> {
     return new Observable((sink) => {
       return this.client.subscribe(
         {
@@ -24,7 +26,7 @@ export class SSELink extends ApolloLink {
           operationName: operation.operationName,
         },
         {
-          next: (data) => sink.next(data as FetchResult),
+          next: (value) => sink.next(value as ExecutionResult),
           complete: () => sink.complete(),
           error: (err) => sink.error(err),
         }

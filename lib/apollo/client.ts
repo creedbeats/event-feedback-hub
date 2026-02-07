@@ -1,57 +1,53 @@
-import { ApolloClient, InMemoryCache, HttpLink, split } from "@apollo/client/core";
-import { getMainDefinition } from "@apollo/client/utilities";
-import { SSELink } from "./sse-link";
+'use client'
 
-function makeClient() {
+import { ApolloClient, HttpLink, InMemoryCache, split } from '@apollo/client'
+import { getMainDefinition } from '@apollo/client/utilities'
+import { SSELink } from './sse-link'
+
+const GRAPHQL_ENDPOINT = '/api/graphql'
+
+let apolloClient: ApolloClient | null = null
+
+function createApolloClient() {
   const httpLink = new HttpLink({
-    uri: "/api/graphql",
-  });
+    uri: GRAPHQL_ENDPOINT,
+  })
 
   const sseLink = new SSELink({
-    url: "/api/graphql",
-  });
+    url: GRAPHQL_ENDPOINT,
+  })
 
   const splitLink = split(
     ({ query }) => {
-      const definition = getMainDefinition(query);
+      const definition = getMainDefinition(query)
       return (
-        definition.kind === "OperationDefinition" &&
-        definition.operation === "subscription"
-      );
+        definition.kind === 'OperationDefinition' &&
+        definition.operation === 'subscription'
+      )
     },
     sseLink,
     httpLink
-  );
+  )
 
   return new ApolloClient({
     link: splitLink,
-    cache: new InMemoryCache({
-      typePolicies: {
-        Query: {
-          fields: {
-            feedback: {
-              keyArgs: ["filter"],
-              merge(_, incoming) {
-                return incoming;
-              },
-            },
-          },
-        },
+    cache: new InMemoryCache(),
+    defaultOptions: {
+      watchQuery: {
+        fetchPolicy: 'cache-and-network',
       },
-    }),
-  });
+    },
+  })
 }
 
-let clientSingleton: ReturnType<typeof makeClient> | undefined;
-
 export function getClient() {
-  if (typeof window === "undefined") {
-    return makeClient();
+  if (typeof window === 'undefined') {
+    return createApolloClient()
   }
 
-  if (!clientSingleton) {
-    clientSingleton = makeClient();
+  if (!apolloClient) {
+    apolloClient = createApolloClient()
   }
 
-  return clientSingleton;
+  return apolloClient
 }

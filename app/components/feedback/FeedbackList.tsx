@@ -1,10 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { gql } from "@apollo/client/core";
 import { useQuery, useSubscription } from "@apollo/client/react";
-import { useState } from "react";
-import { PaginationControls } from "../filters/PaginationControls";
+import type { Feedback, FeedbackResponse, FeedbackFilterInput } from "@/lib/types";
 import { FeedbackItem } from "./FeedbackItem";
+import { PaginationControls } from "../filters/PaginationControls";
 
 const GET_FEEDBACK = gql`
   query GetFeedback($filter: FeedbackFilterInput, $pagination: PaginationInput) {
@@ -33,7 +34,7 @@ const GET_FEEDBACK = gql`
 `;
 
 const FEEDBACK_SUBSCRIPTION = gql`
-  subscription FeedbackAdded($eventId: ID) {
+  subscription OnFeedbackAdded($eventId: ID) {
     feedbackAdded(eventId: $eventId) {
       id
       eventId
@@ -49,49 +50,11 @@ const FEEDBACK_SUBSCRIPTION = gql`
   }
 `;
 
-interface FeedbackFilter {
-  eventId?: string | null;
-  minRating?: number | null;
-  maxRating?: number | null;
-}
-
 interface FeedbackListProps {
-  filter: FeedbackFilter;
+  filter: FeedbackFilterInput;
   page: number;
   pageSize: number;
   onPageChange: (page: number) => void;
-}
-
-interface FeedbackData {
-  id: string;
-  eventId: string;
-  authorName: string;
-  content: string;
-  rating: number;
-  createdAt: string;
-  event: {
-    id: string;
-    name: string;
-  };
-}
-
-interface FeedbackSubscriptionData {
-  feedbackAdded: FeedbackData;
-}
-
-interface PageInfo {
-  hasNextPage: boolean;
-  hasPreviousPage: boolean;
-  currentPage: number;
-  totalPages: number;
-}
-
-interface FeedbackQueryData {
-  feedback: {
-    items: FeedbackData[];
-    totalCount: number;
-    pageInfo: PageInfo;
-  };
 }
 
 export function FeedbackList({
@@ -107,36 +70,37 @@ export function FeedbackList({
   if (filter.minRating) graphqlFilter.minRating = filter.minRating;
   if (filter.maxRating) graphqlFilter.maxRating = filter.maxRating;
 
-  const { data, loading, error, refetch } = useQuery<FeedbackQueryData>(GET_FEEDBACK, {
-    variables: {
-      filter: Object.keys(graphqlFilter).length > 0 ? graphqlFilter : null,
-      pagination: { page, pageSize },
-    },
-    fetchPolicy: "cache-and-network",
-  });
+  const { data, loading, error, refetch } = useQuery<FeedbackResponse>(
+    GET_FEEDBACK,
+    {
+      variables: {
+        filter: Object.keys(graphqlFilter).length > 0 ? graphqlFilter : null,
+        pagination: { page, pageSize },
+      },
+    }
+  );
 
-  useSubscription<FeedbackSubscriptionData>(FEEDBACK_SUBSCRIPTION, {
-    variables: { eventId: filter.eventId || null },
-    onData: ({ data: subData }) => {
-      if (subData.data?.feedbackAdded) {
-        const newFeedback = subData.data.feedbackAdded;
+  useSubscription<{ feedbackAdded: Feedback }>(FEEDBACK_SUBSCRIPTION, {
+    variables: { eventId: filter.eventId },
+    onData: ({ data: subscriptionData }) => {
+      const newFeedback = subscriptionData?.data?.feedbackAdded;
+      if (!newFeedback) return;
 
-        const matchesRating =
-          (!filter.minRating || newFeedback.rating >= filter.minRating) &&
-          (!filter.maxRating || newFeedback.rating <= filter.maxRating);
+      const matchesRating =
+        (!filter.minRating || newFeedback.rating >= filter.minRating) &&
+        (!filter.maxRating || newFeedback.rating <= filter.maxRating);
 
-        if (matchesRating) {
-          setNewFeedbackIds((prev) => new Set([...prev, newFeedback.id]));
-          refetch();
+      if (matchesRating) {
+        setNewFeedbackIds((prev) => new Set([...prev, newFeedback.id]));
+        refetch();
 
-          setTimeout(() => {
-            setNewFeedbackIds((prev) => {
-              const next = new Set(prev);
-              next.delete(newFeedback.id);
-              return next;
-            });
-          }, 5000);
-        }
+        setTimeout(() => {
+          setNewFeedbackIds((prev) => {
+            const next = new Set(prev);
+            next.delete(newFeedback.id);
+            return next;
+          });
+        }, 5000);
       }
     },
   });
@@ -201,7 +165,7 @@ export function FeedbackList({
       </div>
 
       <div className="space-y-3">
-        {items.map((feedback: FeedbackData) => (
+        {items.map((feedback) => (
           <FeedbackItem
             key={feedback.id}
             feedback={feedback}

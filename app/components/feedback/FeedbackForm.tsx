@@ -1,5 +1,6 @@
 "use client";
 
+import type { CreateFeedbackInput, CreateFeedbackResponse } from "@/lib/types";
 import { gql } from "@apollo/client/core";
 import { useMutation } from "@apollo/client/react";
 import { useState } from "react";
@@ -19,6 +20,7 @@ const CREATE_FEEDBACK = gql`
     }
   }
 `;
+
 interface FeedbackFormProps {
   preselectedEventId?: string | null;
 }
@@ -32,16 +34,10 @@ export function FeedbackForm({ preselectedEventId }: FeedbackFormProps) {
   const [rating, setRating] = useState(0);
   const [successMessage, setSuccessMessage] = useState("");
 
-  const [createFeedback, { loading, error }] = useMutation(CREATE_FEEDBACK, {
-    onCompleted: () => {
-      setAuthorName("");
-      setContent("");
-      setRating(0);
-      setEventId(preselectedEventId || null);
-      setSuccessMessage("Feedback submitted successfully!");
-      setTimeout(() => setSuccessMessage(""), 3000);
-    },
-  });
+  const [createFeedback, { loading, error }] = useMutation<
+    CreateFeedbackResponse,
+    { input: CreateFeedbackInput }
+  >(CREATE_FEEDBACK);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,16 +46,27 @@ export function FeedbackForm({ preselectedEventId }: FeedbackFormProps) {
       return;
     }
 
-    await createFeedback({
-      variables: {
-        input: {
-          eventId,
-          authorName: authorName.trim(),
-          content: content.trim(),
-          rating,
+    try {
+      await createFeedback({
+        variables: {
+          input: {
+            eventId,
+            authorName: authorName.trim(),
+            content: content.trim(),
+            rating,
+          },
         },
-      },
-    });
+      });
+
+      setAuthorName("");
+      setContent("");
+      setRating(0);
+      setEventId(preselectedEventId || null);
+      setSuccessMessage("Feedback submitted successfully!");
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch {
+      // Error is handled by the hook
+    }
   };
 
   const isValid =
